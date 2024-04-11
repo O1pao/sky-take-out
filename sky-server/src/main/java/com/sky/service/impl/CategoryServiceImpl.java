@@ -84,12 +84,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = new Category();
         // 拷贝categoryDTO的属性到category上
         BeanUtils.copyProperties(categoryDTO, category);
-        // 设置更新时间，创建时间，创建人id， 修改人id
+        // 设置初始状态为禁用
         category.setStatus(StatusConstant.DISABLE);
-        category.setUpdateTime(LocalDateTime.now());
-        category.setCreateTime(LocalDateTime.now());
-        category.setCreateUser(BaseContext.getCurrentId());
-        category.setUpdateUser(BaseContext.getCurrentId());
         categoryMapper.add(category);
     }
 
