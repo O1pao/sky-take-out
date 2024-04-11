@@ -9,4 +9,5 @@ import java.util.List;
 public interface DishFlavorMapper {
 
     void insertBath(List<DishFlavor> flavors);
+
 }
