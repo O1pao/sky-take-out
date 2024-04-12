@@ -19,7 +19,7 @@
         from employee
     </sql>
 
-    <select id="pageQuery" resultType="com.sky.entity.Employee">
+     <select id="pageQuery" resultType="com.sky.entity.Employee">
         <include refid="commonSelect"></include>
         <where>
             <if test="name != null and name != ''">
