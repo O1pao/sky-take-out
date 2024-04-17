@@ -48,4 +48,9 @@ public interface CategoryService {
      */
     void deleteById(Long id);
 
+    /**
+     * 查询所有分类
+     * @return
+     */
+    List<Category> getList();
 }

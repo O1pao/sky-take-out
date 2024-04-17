@@ -120,4 +120,10 @@ public class CategoryServiceImpl implements CategoryService {
         // 执行删除分类
         categoryMapper.deleteById(id);
     }
+
+    @Override
+    public List<Category> getList() {
+        List<Category> categoryList = categoryMapper.getList();
+        return categoryList;
+    }
 }

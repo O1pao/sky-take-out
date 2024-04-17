@@ -53,7 +53,7 @@ public class SetmealController {
     @PostMapping("/status/{status}")
     @ApiOperation("套餐起售、停售")
     public Result changeStatus(@PathVariable Integer status, Long id){
-        log.info("修改id为{}的套餐状态为{}", id, status);
+        log.info("修改id为{}的套餐状态为{}", id, status == 1 ? "启用" : "禁用");
         setmealService.changeStatus(id, status);
         return Result.success();
     }

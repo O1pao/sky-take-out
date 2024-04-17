@@ -58,4 +58,11 @@ public interface CategoryMapper {
      */
     @Delete("delete from category where id = #{id}")
     void deleteById(Long id);
+
+    /**
+     * 获取所有分类
+     * @return
+     */
+    @Select("select * from category")
+    List<Category> getList();
 }
