@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.beans.beancontext.BeanContext;
 import java.math.MathContext;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -164,5 +165,33 @@ public class DishServiceImpl implements DishService {
             // 插入n条口味
             dishFlavorMapper.insertBath(flavors);
         }
+    }
+
+    /**
+     * 条件查询菜品和口味
+     * @param dish
+     * @return
+     */
+    @Override
+    public List<DishVO> listWithFlavor(Dish dish) {
+        // 获取到对应分类的菜品列表
+        List<Dish> dishes = dishMapper.getByCategoryId(dish.getCategoryId());
+
+        // 要返回的数据
+        List<DishVO> dishVOList = new ArrayList<>();
+
+        dishes.forEach(d -> {
+            DishVO dishVO = new DishVO();
+            // 拷贝数据到dishVO
+            BeanUtils.copyProperties(d, dishVO);
+
+            // 查询口味信息
+            List<DishFlavor> dishFlavors = dishFlavorMapper.getByDishId(d.getId());
+            dishVO.setFlavors(dishFlavors);
+
+            dishVOList.add(dishVO);
+        });
+
+        return null;
     }
 }
