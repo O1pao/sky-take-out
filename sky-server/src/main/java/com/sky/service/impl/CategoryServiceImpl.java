@@ -121,9 +121,4 @@ public class CategoryServiceImpl implements CategoryService {
         categoryMapper.deleteById(id);
     }
 
-    @Override
-    public List<Category> getList() {
-        List<Category> categoryList = categoryMapper.getList();
-        return categoryList;
-    }
 }

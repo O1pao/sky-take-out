@@ -181,6 +181,9 @@ public class DishServiceImpl implements DishService {
         List<DishVO> dishVOList = new ArrayList<>();
 
         dishes.forEach(d -> {
+            // 如果未启售，则不添加进列表中
+            if (d.getStatus() == StatusConstant.DISABLE)
+                return;
             DishVO dishVO = new DishVO();
             // 拷贝数据到dishVO
             BeanUtils.copyProperties(d, dishVO);

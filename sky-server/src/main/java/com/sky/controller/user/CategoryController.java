@@ -28,8 +28,7 @@ public class CategoryController {
     @GetMapping("/list")
     @ApiOperation("查询分类")
     public Result<List<Category>> list(Integer type) {
-//        List<Category> list = categoryService.getListByType(type);
-        List<Category> list = categoryService.getList();
+        List<Category> list = categoryService.getListByType(type);
         return Result.success(list);
     }
 }
