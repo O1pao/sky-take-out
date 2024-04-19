@@ -48,7 +48,7 @@ public interface DishMapper {
     List<DishVO> pageQuery(DishPageQueryDTO dishPageQueryDTO);
 
     /**
-     * 根据主键查询菜品
+     * 根据id查询菜品
      * @param id
      * @return
      */
