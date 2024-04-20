@@ -100,7 +100,18 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
                 .userId(BaseContext.getCurrentId())
                 .build();
         BeanUtils.copyProperties(shoppingCartDTO, shoppingCart);
-        shoppingCartMapper.delete(shoppingCart);
+        List<ShoppingCart> list = shoppingCartMapper.list(shoppingCart);
+        if (list != null && list.size() > 0){
+            // 查询数量是否为1，是则直接删除信息，否则number-1
+            ShoppingCart shoppingCart1 = list.get(0);
+            Integer number = shoppingCart1.getNumber();
+            if (number == 1)
+                shoppingCartMapper.delete(shoppingCart);
+            else{
+                shoppingCart1.setNumber(number - 1);
+                shoppingCartMapper.updateNumberById(shoppingCart1);
+            }
+        }
     }
 
     /**
