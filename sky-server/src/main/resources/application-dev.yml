@@ -19,3 +19,11 @@ sky:
   wechat:
     appid: wxf1a09dc3dc1c7484
     secret: 4f948a713a89cc4c503429871a320fda
+#    由于个人没有资质，所以参数设置为null
+    mchid: null
+    mch-serial-no: null
+    private-key-file-path: null
+    api-v3-key: null
+    we-chat-pay-cert-file-path: null
+    notify-url: http://6f866b56.r8.vip.cpolar.cn/notify/paySuccess
+    refund-notify-url:  http://6f866b56.r8.vip.cpolar.cn/notify/paySuccess
