@@ -13,9 +13,11 @@ import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import lombok.Builder;
 import org.apache.poi.ss.formula.functions.Odd;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,6 +52,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Builder
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -64,8 +67,8 @@ public class OrderServiceImpl implements OrderService {
     private ShoppingCartMapper shoppingCartMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
-
-    private Orders orders;
+    @Autowired
+    private Orders order;
 
     @Override
     @Transactional
@@ -105,7 +108,7 @@ public class OrderServiceImpl implements OrderService {
         orders.setAddress(addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail()); // 设置地址
         orders.setConsignee(addressBook.getConsignee()); // 设置收货人
 
-        this.orders = orders; // 设置全局变量orders
+        this.order = orders; // 设置全局变量orders
         orderMapper.insert(orders);
 
         // 向订单明细表中插入n条数据
@@ -163,7 +166,7 @@ public class OrderServiceImpl implements OrderService {
         Integer OrderPaidStatus = Orders.PAID;//支付状态，已支付
         Integer OrderStatus = Orders.TO_BE_CONFIRMED;  //订单状态，待接单
         LocalDateTime check_out_time = LocalDateTime.now();//更新支付时间
-        orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, this.orders.getId());
+        orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, this.order.getId());
         return vo;
     }
 
@@ -188,4 +191,44 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
     }
 
+    /**
+     * 查询历史订单
+     * @return
+     */
+    @Override
+    public PageResult pageQuery4User(Integer page, Integer pageSize, Integer status) {
+        PageHelper.startPage(page, pageSize);
+
+        // 将信息传入OrdersPageQueryDTO对象
+        OrdersPageQueryDTO ordersPageQueryDTO = new OrdersPageQueryDTO();
+        ordersPageQueryDTO.setPage(page);
+        ordersPageQueryDTO.setPageSize(pageSize);
+        ordersPageQueryDTO.setStatus(status);
+        ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
+
+        // 进行动态查询操作
+        // 查询orders表，封装成Page列表
+        Page<Orders> ordersPage = orderMapper.list(ordersPageQueryDTO);
+
+        // 存入订单明细的集合
+        List<Orders> ordersList = new ArrayList<>();
+
+        // 查询订单明细表
+        if (!ordersPage.isEmpty()){
+            for (Orders orders : ordersPage) {
+                Long ordersId = orders.getId();
+
+                // 查询出订单明细
+                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrdersId(ordersId);
+                // 封装数据并返回
+                OrderVO orderVO = new OrderVO();
+                BeanUtils.copyProperties(orders, orderVO);
+                orderVO.setOrderDetailList(orderDetailList);
+                ordersList.add(orderVO);
+            }
+        }
+
+        PageResult pageResult = new PageResult(ordersPage.getTotal(), ordersList);
+        return pageResult;
+    }
 }
