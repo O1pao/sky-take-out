@@ -22,4 +22,5 @@ public interface OrderService {
 
     void userCancelOrder(Long id);
 
+    void userRepetition(Long id);
 }

@@ -34,7 +34,7 @@ public class ShoppingCartController {
     @ApiOperation("添加购物车")
     public Result add(@RequestBody ShoppingCartDTO shoppingCartDTO){
         log.info("添加购物车，商品信息为：{}", shoppingCartDTO);
-        shoppingCartService.addShppingCart(shoppingCartDTO);
+        shoppingCartService.addShoppingCart(shoppingCartDTO);
         return Result.success();
     }
 

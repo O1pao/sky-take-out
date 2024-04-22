@@ -36,7 +36,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
      * @param shoppingCartDTO
      */
     @Override
-    public void addShppingCart(ShoppingCartDTO shoppingCartDTO) {
+    public void addShoppingCart(ShoppingCartDTO shoppingCartDTO) {
         // 新建一个购物车对象
         ShoppingCart shoppingCart = new ShoppingCart();
         // 拷贝信息到该对象
