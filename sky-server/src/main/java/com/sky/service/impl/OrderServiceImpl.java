@@ -380,4 +380,21 @@ public class OrderServiceImpl implements OrderService {
         orderStatisticsVO.setToBeConfirmed(orderMapper.getStatistics(Orders.TO_BE_CONFIRMED));
         return orderStatisticsVO;
     }
+
+    /**
+     * 商家接单
+     * @param ordersConfirmDTO
+     */
+    @Override
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+        // 获取订单信息
+        OrderVO orders = orderMapper.getOrdersById(ordersConfirmDTO.getId());
+        // 如果订单不存在抛出异常
+        if (orders == null)
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+
+        // 更改订单状态为已接单
+        orders.setStatus(Orders.CONFIRMED);
+        orderMapper.update(orders);
+    }
 }
