@@ -8,6 +8,8 @@ import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 
+import java.time.LocalDateTime;
+
 public interface OrderService {
 
     OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO);
@@ -23,4 +25,6 @@ public interface OrderService {
     void userCancelOrder(Long id);
 
     void userRepetition(Long id);
+
+    PageResult pageQuery4Admin(OrdersPageQueryDTO ordersPageQueryDTO);
 }

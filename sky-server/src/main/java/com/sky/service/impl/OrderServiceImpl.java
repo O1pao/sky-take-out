@@ -20,6 +20,7 @@ import lombok.SneakyThrows;
 import org.apache.poi.ss.formula.functions.Odd;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.jaxb.SpringDataJaxb;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -239,7 +240,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 根据id查询订单详情
+     * 用户端根据id查询订单详情
      * @param id
      * @return
      */
@@ -255,7 +256,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 取消订单
+     * 用户端取消订单
      * @param id
      */
     @SneakyThrows
@@ -298,7 +299,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 再来一单
+     * 用户端再来一单
      * @param id 订单id
      */
     @Override
@@ -314,9 +315,32 @@ public class OrderServiceImpl implements OrderService {
             BeanUtils.copyProperties(orderDetail, shoppingCart);
             // 设置购物车对象用户id为当前用户id
             shoppingCart.setUserId(BaseContext.getCurrentId());
+            // 设置创建时间为当前时间
+            shoppingCart.setCreateTime(LocalDateTime.now());
             shoppingCartList.add(shoppingCart);
         }
         // 往购物车中批量插入数据
         shoppingCartMapper.insertBatch(shoppingCartList);
+    }
+
+    @Override
+    public PageResult pageQuery4Admin(OrdersPageQueryDTO ordersPageQueryDTO) {
+        // 开始分页查询
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
+        // 分页查询结果
+        Page<Orders> ordersPage = orderMapper.list(ordersPageQueryDTO);
+        // 封装查询结果
+        List<OrderVO> orderVOList = new ArrayList<>();
+        for (Orders orders : ordersPage) {
+            // 拷贝属性
+            OrderVO orderVO = new OrderVO();
+            BeanUtils.copyProperties(orders, orderVO);
+            List<OrderDetail> orderDetailList = orderDetailMapper.getByOrdersId(orders.getId());
+            orderVO.setOrderDishes(orderDetailList.toString());
+            orderVOList.add(orderVO);
+        }
+
+        PageResult pageResult = new PageResult(ordersPage.getTotal(), orderVOList);
+        return pageResult;
     }
 }
