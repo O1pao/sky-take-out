@@ -372,8 +372,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderStatisticsVO statistics() {
         OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        // 查询已接单的数量并传入orderStatisticsVO
         orderStatisticsVO.setConfirmed(orderMapper.getStatistics(Orders.CONFIRMED));
+        // 查询派送中的数量并传入orderStatisticsVO
         orderStatisticsVO.setDeliveryInProgress(orderMapper.getStatistics(Orders.DELIVERY_IN_PROGRESS));
+        // 查询待接单的数量并传入orderStatisticsVO
         orderStatisticsVO.setToBeConfirmed(orderMapper.getStatistics(Orders.TO_BE_CONFIRMED));
         return orderStatisticsVO;
     }
