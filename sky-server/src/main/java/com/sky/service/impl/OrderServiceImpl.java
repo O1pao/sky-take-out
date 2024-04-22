@@ -323,6 +323,11 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartMapper.insertBatch(shoppingCartList);
     }
 
+    /**
+     * 管理端订单搜索
+     * @param ordersPageQueryDTO
+     * @return
+     */
     @Override
     public PageResult pageQuery4Admin(OrdersPageQueryDTO ordersPageQueryDTO) {
         // 开始分页查询
@@ -335,12 +340,28 @@ public class OrderServiceImpl implements OrderService {
             // 拷贝属性
             OrderVO orderVO = new OrderVO();
             BeanUtils.copyProperties(orders, orderVO);
-            List<OrderDetail> orderDetailList = orderDetailMapper.getByOrdersId(orders.getId());
-            orderVO.setOrderDishes(orderDetailList.toString());
+            // 获取该订单下菜品的信息
+            orderVO.setOrderDishes(getOrderDishesStr(orders.getId()));
             orderVOList.add(orderVO);
         }
 
         PageResult pageResult = new PageResult(ordersPage.getTotal(), orderVOList);
         return pageResult;
+    }
+
+    /**
+     * 根据订单获取菜品字符串 示例：宫保鸡丁*3
+     * @param ordersId
+     * @return
+     */
+    @Override
+    public String getOrderDishesStr(Long ordersId) {
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrdersId(ordersId);
+        StringBuffer result = new StringBuffer();
+        // 获取该订单下菜品的信息
+        for (OrderDetail orderDetail : orderDetailList) {
+            result.append(orderDetail.getName() + "*" + orderDetail.getNumber() + ";");
+        }
+        return String.valueOf(result);
     }
 }
