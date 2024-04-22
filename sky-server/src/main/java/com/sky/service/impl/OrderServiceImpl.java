@@ -364,4 +364,17 @@ public class OrderServiceImpl implements OrderService {
         }
         return String.valueOf(result);
     }
+
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    @Override
+    public OrderStatisticsVO statistics() {
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        orderStatisticsVO.setConfirmed(orderMapper.getStatistics(Orders.CONFIRMED));
+        orderStatisticsVO.setDeliveryInProgress(orderMapper.getStatistics(Orders.DELIVERY_IN_PROGRESS));
+        orderStatisticsVO.setToBeConfirmed(orderMapper.getStatistics(Orders.TO_BE_CONFIRMED));
+        return orderStatisticsVO;
+    }
 }
