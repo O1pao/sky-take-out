@@ -64,4 +64,32 @@ public class OrderController {
         PageResult pageResult = orderService.pageQuery4User(page, pageSize, status);
         return Result.success(pageResult);
     }
+
+    /**
+     * 查询订单详情
+     * @param id
+     * @return
+     */
+    @GetMapping("/orderDetail/{id}")
+    @ApiOperation("查询订单详情")
+    public Result<OrderVO> orderDetail(@PathVariable Long id){
+        log.info("查询id为{}的订单详情:");
+        OrderVO orderVO = orderService.getOrderDetail(id);
+
+        return Result.success(orderVO);
+    }
+
+
+    /**
+     * 取消订单
+     * @param id
+     * @return
+     */
+    @PutMapping("/cancel/{id}")
+    @ApiOperation("取消订单")
+    public Result cancelOrder(@PathVariable Long id) {
+        log.info("用户取消id为{}的订单", id);
+        orderService.userCancelOrder(id);
+        return Result.success();
+    }
 }
