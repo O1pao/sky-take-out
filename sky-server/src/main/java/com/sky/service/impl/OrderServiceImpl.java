@@ -60,7 +60,23 @@ import java.util.stream.Collectors;
 
 @Service
 @Builder
+@Slf4j
 public class OrderServiceImpl implements OrderService {
+    /**
+     * 各个状态的订单数量统计
+     * @return
+     */
+    @Override
+    public OrderStatisticsVO statistics() {
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        // 查询已接单的数量并传入orderStatisticsVO
+        orderStatisticsVO.setConfirmed(orderMapper.getStatistics(Orders.CONFIRMED));
+        // 查询派送中的数量并传入orderStatisticsVO
+        orderStatisticsVO.setDeliveryInProgress(orderMapper.getStatistics(Orders.DELIVERY_IN_PROGRESS));
+        // 查询待接单的数量并传入orderStatisticsVO
+        orderStatisticsVO.setToBeConfirmed(orderMapper.getStatistics(Orders.TO_BE_CONFIRMED));
+        return orderStatisticsVO;
+    }
 
     @Autowired
     private OrderMapper orderMapper;
@@ -74,6 +90,7 @@ public class OrderServiceImpl implements OrderService {
     private ShoppingCartMapper shoppingCartMapper;
     @Autowired
     private WeChatPayUtil weChatPayUtil;
+
     @Autowired
     private Orders order;
 
@@ -366,22 +383,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 各个状态的订单数量统计
-     * @return
-     */
-    @Override
-    public OrderStatisticsVO statistics() {
-        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
-        // 查询已接单的数量并传入orderStatisticsVO
-        orderStatisticsVO.setConfirmed(orderMapper.getStatistics(Orders.CONFIRMED));
-        // 查询派送中的数量并传入orderStatisticsVO
-        orderStatisticsVO.setDeliveryInProgress(orderMapper.getStatistics(Orders.DELIVERY_IN_PROGRESS));
-        // 查询待接单的数量并传入orderStatisticsVO
-        orderStatisticsVO.setToBeConfirmed(orderMapper.getStatistics(Orders.TO_BE_CONFIRMED));
-        return orderStatisticsVO;
-    }
-
-    /**
      * 商家接单
      * @param ordersConfirmDTO
      */
@@ -395,6 +396,41 @@ public class OrderServiceImpl implements OrderService {
 
         // 更改订单状态为已接单
         orders.setStatus(Orders.CONFIRMED);
+        orderMapper.update(orders);
+    }
+
+    /**
+     * 商家拒单
+     * @param ordersRejectionDTO
+     */
+    @Override
+    @Transactional
+    public void rejection(OrdersRejectionDTO ordersRejectionDTO) {
+        // 获取订单信息
+        OrderVO orders = orderMapper.getOrdersById(ordersRejectionDTO.getId());
+        // 如果订单不存在或者订单为待接单状态抛出异常
+        if (orders == null || orders.getStatus() == Orders.TO_BE_CONFIRMED)
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+
+        //支付状态
+//        Integer payStatus = orders.getPayStatus();
+//        if (payStatus == Orders.PAID) {
+//            //用户已支付，需要退款
+//            String refund = weChatPayUtil.refund(
+//                    orders.getNumber(),
+//                    orders.getNumber(),
+//                    new BigDecimal(0.01),
+//                    new BigDecimal(0.01));
+//            log.info("申请退款：{}", refund);
+//        }
+
+        // 更改订单状态为已取消
+        orders.setStatus(Orders.CANCELLED);
+        // 添加拒单原因
+        orders.setRejectionReason(ordersRejectionDTO.getRejectionReason());
+        // 更改支付状态为退款
+        orders.setPayStatus(Orders.REFUND);
+        // 更新订单状态
         orderMapper.update(orders);
     }
 }
