@@ -471,4 +471,23 @@ public class OrderServiceImpl implements OrderService {
         // 更新订单状态
         orderMapper.update(orders);
     }
+
+    /**
+     * 商家派送订单
+     * @param id
+     */
+    @Override
+    public void delivery(Long id) {
+        OrderVO ordersDB = orderMapper.getOrdersById(id);
+        Integer status = ordersDB.getStatus();
+        // 若订单为空或订单并非已接单状态，抛出订单错误异常
+        if (ordersDB == null && status != Orders.CONFIRMED)
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+
+        // 修改订单状态为派送中
+        ordersDB.setStatus(Orders.DELIVERY_IN_PROGRESS);
+
+        // 更新订单状态
+        orderMapper.update(ordersDB);
+    }
 }

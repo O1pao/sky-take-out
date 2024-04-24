@@ -98,9 +98,23 @@ public class OrderController {
      * @return
      */
     @PutMapping("/cancel")
+    @ApiOperation("商家取消订单")
     public Result cancel(@RequestBody OrdersCancelDTO ordersCancelDTO){
         log.info("商家取消订单，订单id：{}，取消原因：{}", ordersCancelDTO.getId(), ordersCancelDTO.getCancelReason());
         orderService.cancel(ordersCancelDTO);
+        return Result.success();
+    }
+
+    /**
+     * 派送订单
+     * @param id
+     * @return
+     */
+    @PutMapping("/delivery/{id}")
+    @ApiOperation("商家派送订单")
+    public Result delivery(@PathVariable Long id){
+        log.info("商家派送订单，订单id：{}", id);
+        orderService.delivery(id);
         return Result.success();
     }
 }
