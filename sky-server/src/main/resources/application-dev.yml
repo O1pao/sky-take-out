@@ -27,3 +27,7 @@ sky:
     we-chat-pay-cert-file-path: null
     notify-url: http://6f866b56.r8.vip.cpolar.cn/notify/paySuccess
     refund-notify-url:  http://6f866b56.r8.vip.cpolar.cn/notify/paySuccess
+  shop:
+    address: 福建省厦门市集美区银江路185号
+  baidu:
+    ak: null
