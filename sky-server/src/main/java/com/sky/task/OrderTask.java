@@ -46,7 +46,7 @@ public class OrderTask {
     /**
      * 处理一直处于派送中的订单
      */
-    @Scheduled(cron = "0 0 1 * * ? *")
+    @Scheduled(cron = "0 0 1 * * ?")
     public void processDeliveryOrder(){
         log.info("处理一直处于派送中的订单：{}", LocalDateTime.now());
         // 设置time = 当前时间 - 1小时

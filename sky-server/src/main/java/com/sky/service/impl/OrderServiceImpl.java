@@ -62,7 +62,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@Builder
 @Slf4j
 public class OrderServiceImpl implements OrderService {
 
