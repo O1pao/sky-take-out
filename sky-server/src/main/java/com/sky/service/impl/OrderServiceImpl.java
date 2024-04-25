@@ -205,7 +205,7 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, this.order.getId());
 
         // 通过websocket向客户端浏览器推送消息 type orderId content
-        HashMap map = new HashMap<>();
+        Map map = new HashMap<>();
         map.put("type", 1); // 1表示来单提醒 2表示客户催单
         map.put("orderId", this.order.getId()); // 用户id
         map.put("content", "订单号：" + this.order.getNumber()); // 信息赋值为订单号
@@ -595,5 +595,28 @@ public class OrderServiceImpl implements OrderService {
             //配送距离超过5000米
             throw new OrderBusinessException("超出配送范围");
         }
+    }
+
+    /**
+     * 用户催单
+     * @param id
+     */
+    @Override
+    public void reminder(Long id) {
+        // 获取订单信息
+        OrderVO orderVO = orderMapper.getOrdersById(id);
+
+        // 校验订单是否存在
+        if (orderVO == null)
+            throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
+
+        // 通过websocket向客户端浏览器推送消息 type orderId content
+        Map map = new HashMap<>();
+        map.put("type", 2); // 1表示来单提醒 2表示客户催单
+        map.put("orderId", id); // 用户id
+        map.put("content", "订单号：" + orderVO.getNumber()); // 信息赋值
+
+        String json = JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(json);
     }
 }
