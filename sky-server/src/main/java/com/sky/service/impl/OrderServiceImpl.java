@@ -16,6 +16,7 @@ import com.sky.utils.HttpClientUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
+import com.sky.websocket.WebSocketServer;
 import io.swagger.annotations.ApiOperation;
 import lombok.Builder;
 import lombok.SneakyThrows;
@@ -83,6 +84,8 @@ public class OrderServiceImpl implements OrderService {
     private String ak;
     @Autowired
     private Orders order;
+    @Autowired
+    private WebSocketServer webSocketServer;
 
     /**
      * 各个状态的订单数量统计
@@ -200,6 +203,17 @@ public class OrderServiceImpl implements OrderService {
         Integer OrderStatus = Orders.TO_BE_CONFIRMED;  //订单状态，待接单
         LocalDateTime check_out_time = LocalDateTime.now();//更新支付时间
         orderMapper.updateStatus(OrderStatus, OrderPaidStatus, check_out_time, this.order.getId());
+
+        // 通过websocket向客户端浏览器推送消息 type orderId content
+        HashMap map = new HashMap<>();
+        map.put("type", 1); // 1表示来单提醒 2表示客户催单
+        map.put("orderId", this.order.getId()); // 用户id
+        map.put("content", "订单号：" + this.order.getNumber()); // 信息赋值为订单号
+
+        String json = JSON.toJSONString(map);
+        webSocketServer.sendToAllClient(json);
+
+
         return vo;
     }
 
