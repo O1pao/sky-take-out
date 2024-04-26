@@ -32,9 +32,10 @@ public class ReportServiceImpl implements ReportService {
     public TurnoverReportVO getTurnoverStatistics(LocalDate begin, LocalDate end) {
         // 当前集合用于存放从begin到end范围内每天的日期
         List<LocalDate> dateList = new ArrayList<>();
+        dateList.add(begin);
         while (!begin.equals(end)){
-            dateList.add(begin);
             begin = begin.plusDays(1);
+            dateList.add(begin);
         }
 
         // 存放每天的营业额
