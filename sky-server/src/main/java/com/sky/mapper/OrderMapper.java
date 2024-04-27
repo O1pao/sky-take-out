@@ -89,4 +89,11 @@ public interface OrderMapper {
      * @return
      */
     Double sumByMap(Map map);
+
+    /**
+     * 根据给定的参数查询对应的订单数
+     * @param map
+     * @return
+     */
+    Integer countByMap(Map map);
 }
