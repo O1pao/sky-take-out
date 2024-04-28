@@ -1,10 +1,13 @@
 package com.sky.service.impl;
 
+import com.sky.dto.GoodsSalesDTO;
 import com.sky.entity.Orders;
+import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
 import com.sky.vo.OrderReportVO;
+import com.sky.vo.SalesTop10ReportVO;
 import com.sky.vo.TurnoverReportVO;
 import com.sky.vo.UserReportVO;
 import io.swagger.models.auth.In;
@@ -16,10 +19,8 @@ import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportServiceImpl implements ReportService {
@@ -28,6 +29,8 @@ public class ReportServiceImpl implements ReportService {
     private OrderMapper orderMapper;
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private OrderDetailMapper orderDetailMapper;
 
     /**
      * 营业额统计
@@ -178,6 +181,47 @@ public class ReportServiceImpl implements ReportService {
                 .totalOrderCount(totalOrderCount)
                 .validOrderCount(validOrderCount)
                 .orderCompletionRate(Double.valueOf(String.format("%.1f", orderCompletionRate)))
+                .build();
+    }
+
+    /**
+     * 套餐和菜品销量top10统计
+     * @param begin
+     * @param end
+     * @return
+     */
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+        // 用于存放begin到end之间的日期集合
+        List<LocalDate> dateList = new ArrayList<>();
+        dateList.add(begin);
+        while (!begin.equals(end)){
+            begin = begin.plusDays(1);
+            dateList.add(begin);
+        }
+
+        // 对应日期开始时间
+        LocalDateTime beginTime = LocalDateTime.of(begin, LocalTime.MIN);
+        // 对应日期结束时间
+        LocalDateTime endTime = LocalDateTime.of(end, LocalTime.MAX);
+
+        Map map = new HashMap<>();
+        map.put("beginTime", beginTime);
+        map.put("endTime", endTime);
+        map.put("status", Orders.COMPLETED); // 查询的是订单状态为已完成的菜品
+
+        List<GoodsSalesDTO> salesTop10 = orderDetailMapper.getSalesTop10ByMap(map);
+
+        // 存放对应日期对应的菜品/订单名字
+        List<String> nameList = salesTop10.stream().map(GoodsSalesDTO::getName).collect(Collectors.toList());
+        // 存放对应日期对应的菜品/订单订单数量
+        List<Integer> numberList = salesTop10.stream().map(GoodsSalesDTO::getNumber).collect(Collectors.toList());
+
+        // 封装返回对象
+        return SalesTop10ReportVO
+                .builder()
+                .nameList(StringUtils.join(nameList, ","))
+                .numberList(StringUtils.join(numberList, ","))
                 .build();
     }
 
