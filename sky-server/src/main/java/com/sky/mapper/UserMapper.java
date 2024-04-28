@@ -38,4 +38,5 @@ public interface UserMapper {
      * @return
      */
     Integer getUserByMap(Map map);
+
 }
