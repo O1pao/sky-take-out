@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * 数据统计
@@ -89,5 +91,16 @@ public class ReportController {
         log.info("统计{}到{}的套餐和菜品销量top10", begin, end);
         SalesTop10ReportVO salesTop10ReportVO = reportService.getSalesTop10(begin, end);
         return Result.success(salesTop10ReportVO);
+    }
+
+    /**
+     * 导出运营数据Excel报表
+     * @param httpServletResponse 响应对象，输出Excel文件
+     */
+    @GetMapping("/export")
+    @ApiOperation("出运营数据Excel报表")
+    public void export(HttpServletResponse httpServletResponse){
+        log.info("出运营数据Excel报表");
+        reportService.export(httpServletResponse);
     }
 }

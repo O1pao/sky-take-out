@@ -6,15 +6,20 @@ import com.sky.mapper.OrderDetailMapper;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.SalesTop10ReportVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.service.WorkspaceService;
+import com.sky.vo.*;
 import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +36,8 @@ public class ReportServiceImpl implements ReportService {
     private UserMapper userMapper;
     @Autowired
     private OrderDetailMapper orderDetailMapper;
+    @Autowired
+    private WorkspaceService workspaceService;
 
     /**
      * 营业额统计
@@ -239,5 +246,70 @@ public class ReportServiceImpl implements ReportService {
         map.put("status", status);
 
         return orderMapper.countByMap(map);
+    }
+
+    /**
+     * 导出运营数据Excel报表
+     */
+    @Override
+    public void export(HttpServletResponse httpServletResponse) {
+
+        LocalDateTime endTime = LocalDateTime.of(LocalDate.now().minusDays(1), LocalTime.MIN);
+        LocalDateTime beginTime = LocalDateTime.of(LocalDate.now().minusDays(30), LocalTime.MAX);
+
+        // 查询数据库，获取数据（查询最近30天的数据）
+        BusinessDataVO businessData = workspaceService.getBusinessData(beginTime, endTime);
+
+        // 通过POI写入Excel文件
+
+        try (
+                // 获取模版资源
+                InputStream is = this.getClass().getClassLoader().getResourceAsStream("template/运营数据报表模板.xlsx");
+                // 根据模版创建一个新的Excel文件
+                XSSFWorkbook excel = new XSSFWorkbook(is);
+                // 通过输出流将Excel文件下载到客户端浏览器
+                ServletOutputStream os = httpServletResponse.getOutputStream();
+        ) {
+            // 往新的Excel中填充数据
+            // 获取第一个标签页
+            XSSFSheet sheet = excel.getSheetAt(0);
+            // 设置第2行第2个单元格的值 -- 时间
+            sheet.getRow(1).getCell(1).setCellValue("时间：" + beginTime.toLocalDate() + "至" + endTime.toLocalDate() );
+            // 设置第4行第3个单元格的值 -- 营业额
+            sheet.getRow(3).getCell(2).setCellValue(businessData.getTurnover());
+            // 设置第4行第5个单元格的值 -- 订单完成率
+            sheet.getRow(3).getCell(4).setCellValue(businessData.getOrderCompletionRate());
+            // 设置第4行第7个单元格的值 -- 新增用户数
+            sheet.getRow(3).getCell(6).setCellValue(businessData.getNewUsers());
+            // 设置第5行第3个单元格的值 -- 有效订单
+            sheet.getRow(4).getCell(2).setCellValue(businessData.getValidOrderCount());
+            // 设置第5行第5个单元格的值 -- 平均客单价
+            sheet.getRow(4).getCell(4).setCellValue(businessData.getUnitPrice());
+
+            // 填充明细数据
+            for (int i = 0; i < 30; i++) {
+                LocalDate localDate = beginTime.plusDays(i).toLocalDate();
+                BusinessDataVO businessDataTemp = workspaceService.getBusinessData(
+                        LocalDateTime.of(localDate, LocalTime.MIN),
+                        LocalDateTime.of(localDate, LocalTime.MAX));
+                // 设置第7+i行第2个单元格的值 -- 日期
+                sheet.getRow(7 + i).getCell(1).setCellValue(localDate.toString());
+                // 设置第7+i行第3个单元格的值 -- 营业额
+                sheet.getRow(7 + i).getCell(2).setCellValue(businessDataTemp.getTurnover());
+                // 设置第7+i行第4个单元格的值 -- 有效订单
+                sheet.getRow(7 + i).getCell(3).setCellValue(businessDataTemp.getValidOrderCount());
+                // 设置第7+i行第5个单元格的值 -- 订单完成率
+                sheet.getRow(7 + i).getCell(4).setCellValue(businessDataTemp.getOrderCompletionRate());
+                // 设置第7+i行第6个单元格的值 -- 平均客单价
+                sheet.getRow(7 + i).getCell(5).setCellValue(businessDataTemp.getUnitPrice());
+                // 设置第7+i行第7个单元格的值 -- 新增用户数
+                sheet.getRow(7 + i).getCell(6).setCellValue(businessDataTemp.getNewUsers());
+            }
+
+            // 通过输出流将Excel文件下载到客户端浏览器
+            excel.write(os);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
